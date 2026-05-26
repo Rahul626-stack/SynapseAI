@@ -1,0 +1,53 @@
+pdf_analyzer_task:
+  description: >
+      Analyze the following retrieved context from a textbook on the topic "{topic}" and identify:
+        1. Key concepts and topics
+        2. Important facts and definitions
+        3. Learning objectives
+        4. Complex ideas that need to be tested
+        
+      --- RETRIEVED CONTEXT ---
+      {context}
+      --- END CONTEXT ---
+      
+      Provide a structured summary of the content that can be used to generate quizzes.
+      
+      The output should be a JSON object with:
+      - key_concepts: List of main concepts and topics
+      - important_facts: List of important facts and definitions
+      - learning_objectives: List of learning objectives
+      - complex_topics: List of complex topics that need testing
+      - summary: A brief summary of the content
+  expected_output: >
+      A structured summary of the content that can be used to generate quizzes.
+  agent: pdf_analyzer 
+
+
+quiz_generator_task:
+  description: >
+      Using the analysis provided, create a comprehensive quiz of exactly {num_questions} questions on the topic "{topic}".
+      
+      Include the following question types: {question_types}
+      
+      For each question:
+      - Include the correct answer
+      - Provide an explanation for the answer
+      - Indicate the difficulty level (easy, medium, hard)
+      - Tag with a Bloom's Taxonomy level
+      
+      {bloom_instructions}
+      
+      {randomness_instruction}
+      
+      The output MUST be a JSON object with a list of questions, where each question has:
+      - question: The question text
+      - type: One of "multiple_choice", "true_false", or "short_answer"
+      - correct_answer: The correct answer
+      - explanation: Explanation of the answer
+      - difficulty: The difficulty level (easy, medium, hard)
+      - options: List of 4 options (only for multiple_choice questions)
+      - bloom_level: The Bloom's Taxonomy level (Remember, Understand, Apply, Analyze, Evaluate, or Create)
+
+  expected_output: >
+      A comprehensive quiz with questions tagged by Bloom's Taxonomy level, including multiple question types, correct answers, explanations, and difficulty ratings.
+  agent: quiz_generator

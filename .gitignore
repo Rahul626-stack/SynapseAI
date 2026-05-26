@@ -3,3 +3,6 @@ __pycache__/
 .DS_Store
 .vscode/
 .idea/
+.chroma_store/
+venv/
+.venv/

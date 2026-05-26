@@ -1,29 +1,26 @@
 [project]
-name = "quizforge_ai"
+name = "synapse_ai"
 version = "0.1.0"
-description = "PDF to Quiz-Generator using crewAI"
-authors = [{ name = "Your Name", email = "you@example.com" }]
+description = "synapse.ai — Adaptive quiz generation powered by CrewAI + RAG + Bloom's Taxonomy"
 requires-python = ">=3.10,<3.13"
 dependencies = [
-    "crewai[tools]>=0.121.1,<1.0.0",
+    "crewai>=0.121.1,<1.0.0",
     "streamlit>=1.32.0",
     "PyPDF2>=3.0.0",
+    "PyYAML>=6.0.1",
+    "chromadb>=0.4.0",
+    "sentence-transformers>=2.2.0",
+    "scikit-learn>=1.3.0",
+    "pypdf>=3.0.0",
     "python-dotenv>=1.0.0",
-    "langchain>=0.1.0",
-    "langchain-openai>=0.0.5",
-    "PyYAML>=6.0.1"
+    "pymupdf>=1.23.0",
+    "langchain-text-splitters>=0.2.0",
+    "plotly>=5.18.0",
 ]
 
-[project.scripts]
-quizforge_ai = "quizforge_ai.main:run"
-run_crew = "quizforge_ai.main:run"
-train = "quizforge_ai.main:train"
-replay = "quizforge_ai.main:replay"
-test = "quizforge_ai.main:test"
-
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.backends._legacy:_Backend"
 
-[tool.crewai]
-type = "crew"
+[tool.setuptools.packages.find]
+where = ["src"]

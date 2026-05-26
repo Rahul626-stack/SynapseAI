@@ -1,5 +1,6 @@
-from pydantic import BaseModel
 from typing import List, Literal, Optional
+from pydantic import BaseModel
+
 
 class Question(BaseModel):
     question: str
@@ -8,6 +9,8 @@ class Question(BaseModel):
     explanation: str
     difficulty: str
     options: Optional[List[str]] = None
+    bloom_level: str = "Remember"
+
 
 class QuizOutput(BaseModel):
     questions: List[Question]
