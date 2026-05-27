@@ -1,4 +1,4 @@
-# ✨ synapse.ai
+# ✨ Synapse.ai
 
 **Intelligent, AI-Powered Educational Assessment Platform**
 
