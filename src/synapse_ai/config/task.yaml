@@ -29,25 +29,39 @@ quiz_generator_task:
       
       Include the following question types: {question_types}
       
+      CRITICAL QUESTION RULES:
+      - multiple_choice: Must be a standard question with exactly 4 plausible options.
+      - true_false: Must be a declarative statement that evaluates to true or false (e.g., "The Earth revolves around the Sun."), NOT a question (e.g., "Does the Earth revolve around the Sun?"). Options should not be provided, just the correct answer.
+      - short_answer: Must be an open-ended question requiring a brief explanation.
+      
       For each question:
       - Include the correct answer
       - Provide an explanation for the answer
       - Indicate the difficulty level (easy, medium, hard)
       - Tag with a Bloom's Taxonomy level
       
+      {question_type_instructions}
+      
       {bloom_instructions}
       
       {randomness_instruction}
       
-      The output MUST be a JSON object with a list of questions, where each question has:
-      - question: The question text
-      - type: One of "multiple_choice", "true_false", or "short_answer"
-      - correct_answer: The correct answer
-      - explanation: Explanation of the answer
-      - difficulty: The difficulty level (easy, medium, hard)
-      - options: List of 4 options (only for multiple_choice questions)
-      - bloom_level: The Bloom's Taxonomy level (Remember, Understand, Apply, Analyze, Evaluate, or Create)
+      The output MUST be a JSON object with a list of questions, matching this exact template:
+      {{
+        "questions": [
+          {{
+            "question": "The question text or declarative statement",
+            "type": "[MUST BE ONE OF THE REQUESTED TYPES: {question_types}]",
+            "correct_answer": "The correct answer",
+            "explanation": "Explanation of the answer",
+            "difficulty": "easy | medium | hard",
+            "options": ["Option A", "Option B", "Option C", "Option D"],
+            "bloom_level": "Remember"
+          }}
+        ]
+      }}
+      Note: Omit the "options" field entirely for true_false and short_answer questions.
 
   expected_output: >
-      A comprehensive quiz with questions tagged by Bloom's Taxonomy level, including multiple question types, correct answers, explanations, and difficulty ratings.
+      A comprehensive quiz in strict JSON format with questions tagged by Bloom's Taxonomy level, including multiple question types, correct answers, explanations, and difficulty ratings.
   agent: quiz_generator

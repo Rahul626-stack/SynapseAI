@@ -269,6 +269,26 @@ BLOOM_COLORS = {
     "Create":     {"bg": "rgba(173, 20, 87, 0.1)",  "text": "#F472B6", "hex": "#F472B6"},
 }
 BLOOM_ORDER = ["Remember", "Understand", "Apply", "Analyze", "Evaluate", "Create"]
+# ── Question Type Instructions ────────────────────────────────────────────────
+def build_question_type_instructions(num_questions: int, mapped_types: list) -> str:
+    if not mapped_types:
+        return ""
+    
+    base_count = num_questions // len(mapped_types)
+    remainder = num_questions % len(mapped_types)
+    
+    distribution = {}
+    for i, qt in enumerate(mapped_types):
+        count = base_count + (1 if i < remainder else 0)
+        distribution[qt] = count
+        
+    lines = ["QUESTION TYPE DISTRIBUTION REQUIREMENT:"]
+    lines.append("You MUST generate exactly the following number of questions per type:\n")
+    for qt, count in distribution.items():
+        if count > 0:
+            lines.append(f"- {qt}: {count} question(s).")
+            
+    return "\n".join(lines)
 
 
 # ── Callbacks for CrewAI Streaming ──────────────────────────────────────────
@@ -421,6 +441,9 @@ if generate_btn:
             
         st.write(f"Context locked. Mapping to Bloom's taxonomy...")
         bloom_instructions = build_bloom_prompt_instructions(num_questions)
+        
+        mapped_types = [type_map.get(t, t) for t in q_types]
+        question_type_instructions = build_question_type_instructions(num_questions, mapped_types)
 
         st.write("Delegating to autonomous agents...")
         
@@ -438,6 +461,7 @@ if generate_btn:
                     "context": context,
                     "num_questions": num_questions,
                     "question_types": question_types_str,
+                    "question_type_instructions": question_type_instructions,
                     "bloom_instructions": bloom_instructions,
                     "randomness_instruction": randomness_instruction,
                 }
@@ -554,7 +578,9 @@ if "questions" in st.session_state and st.session_state["questions"]:
             total += 1
             level = q.get("bloom_level", "Remember")
             user_ans = answers.get(i, "")
-            is_correct = str(user_ans).strip().lower() == str(correct_answer).strip().lower()
+            
+            is_blank = user_ans == "[Leave Blank]" or str(user_ans).strip() == ""
+            is_correct = False if is_blank else str(user_ans).strip().lower() == str(correct_answer).strip().lower()
             
             if is_correct:
                 correct += 1
@@ -646,13 +672,16 @@ if "questions" in st.session_state and st.session_state["questions"]:
             for i, q in enumerate(questions):
                 user_ans = answers.get(i, "")
                 correct_ans = q.get("correct_answer", "")
-                is_correct = str(user_ans).strip().lower() == str(correct_ans).strip().lower()
+                
+                is_blank = user_ans == "[Leave Blank]" or str(user_ans).strip() == ""
+                is_correct = False if is_blank else str(user_ans).strip().lower() == str(correct_ans).strip().lower()
                 level = q.get("bloom_level", "Remember")
                 
-                icon = "🟢" if is_correct else "🔴"
+                icon = "⚪" if is_blank else ("🟢" if is_correct else "🔴")
+                display_ans = "[Unanswered]" if is_blank else user_ans
                 
                 with st.expander(f"{icon} Node {i+1}: {q['question']}"):
-                    st.markdown(f"**Your Input:** `{user_ans}`")
+                    st.markdown(f"**Your Input:** `{display_ans}`")
                     if not is_correct:
                         st.markdown(f"**Valid Signature:** `{correct_ans}`")
                     

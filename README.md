@@ -1,47 +1,114 @@
-# 🧠 synapse.ai (synapse.ai)
+# 🧠 synapse.ai
 
-**Intelligent, AI-Powered Quiz Generation Platform**
+**Intelligent, AI-Powered Educational Assessment Platform**
 
-Transform any PDF document into a pedagogically-sound, multi-format assessment using RAG, multi-agent AI, and Bloom's Taxonomy.
+Transform any PDF document into a pedagogically-sound, multi-format assessment using RAG, Multi-Agent AI (CrewAI), and Bloom's Taxonomy. Synapse.ai intelligently distributes questions across cognitive levels to ensure a deep, balanced evaluation of knowledge.
 
 ---
 
 ## ✨ Features
 
-- **RAG-Powered** — Questions are grounded in your actual document content via semantic retrieval (ChromaDB + SentenceTransformers)
-- **Bloom's Taxonomy** — Questions distributed across 6 cognitive levels (Remember → Create) for balanced assessments
-- **Multi-Agent AI** — Two specialized CrewAI agents collaborate: Content Analyzer → Quiz Generator
-- **Multiple Question Types** — MCQ, True/False, and Short Answer
-- **Premium UI** — Glassmorphic dark-themed Streamlit dashboard with Plotly analytics
-- **Cognitive Analytics** — Radar charts, bar charts, and per-level accuracy breakdowns
+- **RAG-Powered Contextual Grounding:** Questions are generated from your actual document content via robust semantic retrieval using ChromaDB and local SentenceTransformers.
+- **Pedagogically Sound (Bloom's Taxonomy):** Automatically distributes generated questions across the 6 cognitive levels (Remember, Understand, Apply, Analyze, Evaluate, Create) for balanced learning outcomes.
+- **Multi-Agent Orchestration:** Utilizes two specialized CrewAI agents that collaborate sequentially: 
+  - *PDF Content Analyzer:* Extracts key concepts and themes.
+  - *Quiz Generator:* Constructs the quiz adhering strictly to pedagogical frameworks.
+- **Multi-Format Assessments:** Supports Multiple Choice (MCQ), True/False, and Short Answer question architectures.
+- **Ultra-Premium UI:** Built with Streamlit, featuring a glassmorphic dark-theme design, interactive metrics, and real-time streaming updates.
+- **Cognitive Analytics:** Visualizes the difficulty spread and cognitive distribution using interactive Plotly radar and bar charts.
 
 ---
 
-## 🏗️ Architecture
+## 🏗️ Architecture Flow
 
-```
-PDF Upload → PyMuPDF Extraction → LangChain Chunking → SentenceTransformer Embedding → ChromaDB Storage
-                                                                                          ↓
-User Topic → Semantic Retrieval (top-k, distance-filtered) → CrewAI Pipeline → Pydantic Output
-                                                                                          ↓
-                                                              Streamlit UI → Quiz Form → Score Analytics
+```mermaid
+graph TD
+    A[PDF Upload] -->|PyMuPDF Extraction| B(Raw Text)
+    B -->|LangChain Recursive Splitter| C(Text Chunks)
+    C -->|SentenceTransformer| D[(ChromaDB Persistent Vector Store)]
+    
+    E[User Topic Query] -->|Embedding| F{Semantic Search}
+    D --> F
+    F -->|L2 Distance Filter & Random Sample| G[Relevant Context]
+    
+    G --> H[CrewAI Pipeline]
+    H -->|Agent 1| I[PDF Analyzer Task]
+    I -->|Agent 2| J[Quiz Generator Task]
+    
+    J -->|Strict Schema| K[Pydantic Validation]
+    K --> L[Streamlit UI / Analytics Dashboard]
 ```
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| **LLM** | Groq (Llama-3.3 70B Versatile) |
-| **Agent Framework** | CrewAI (≥0.121.1) |
-| **Embedding Model** | SentenceTransformers (`all-MiniLM-L6-v2`) |
-| **Vector Database** | ChromaDB (PersistentClient) |
-| **PDF Parsing** | PyMuPDF (`fitz`) |
-| **Text Splitting** | LangChain `RecursiveCharacterTextSplitter` |
-| **Frontend** | Streamlit + Custom CSS (Glassmorphism) |
-| **Charting** | Plotly (Radar + Bar charts) |
-| **Validation** | Pydantic |
+| Component | Technology |
+|-----------|-----------|
+| **Core LLM** | Groq (Llama-3.3 70B Versatile) |
+| **Agent Framework** | CrewAI |
+| **Vector Database** | ChromaDB (Persistent Local Storage) |
+| **Embeddings** | SentenceTransformers (`all-MiniLM-L6-v2`) |
+| **Text Processing** | LangChain & PyMuPDF (`fitz`) |
+| **Frontend UI** | Streamlit + Custom CSS |
+| **Data Viz** | Plotly Express / Graph Objects |
+| **Data Validation** | Pydantic |
+
+---
+
+## 🚀 Installation & Setup Instructions
+
+Follow these steps to run the application locally.
+
+### 1. Clone the Repository
+```bash
+git clone <your-repo-url>
+cd synapse.ai
+```
+
+### 2. Set Up a Virtual Environment (Recommended)
+```bash
+python -m venv .venv
+# On Windows
+.venv\Scripts\activate
+# On Mac/Linux
+source .venv/bin/activate
+```
+
+### 3. Install Dependencies
+```bash
+pip install -r requirements.txt
+```
+*(Alternatively, you can use `uv` for faster installations: `pip install uv && uv pip install -r requirements.txt`)*
+
+### 4. Configure Environment Variables
+You need a Groq API key to power the LLM engine.
+1. Get a free API key from [Groq Console](https://console.groq.com/).
+2. Create a `.env` file in the root directory:
+```env
+GROQ_API_KEY=your_groq_api_key_here
+```
+
+### 5. Launch the Application
+Run the Streamlit frontend:
+```bash
+streamlit run src/synapse_ai/app.py
+```
+The application will automatically open in your default web browser at `http://localhost:8501`.
+
+---
+
+## 🎮 How to Operate the Application
+
+1. **Upload a Document:** Open the sidebar on the left and upload any educational PDF document. Wait for the *Knowledge Base Synchronized* status.
+2. **Define Parameters:**
+   - **Focus Topic:** (Optional) Enter a specific topic you want to be quizzed on (e.g., "Photosynthesis"). Leave blank to cover the entire document.
+   - **Questions:** Select the number of questions to generate (between 3 and 20).
+   - **Level:** Choose the difficulty tier.
+   - **Question Architecture:** Select one or more question types (MCQ, True/False, Short Answer).
+3. **Synthesize:** Click the **Synthesize Quiz** button. You can monitor the live thoughts of the AI agents via the UI terminal output.
+4. **Take the Quiz:** Once generated, take the interactive quiz.
+5. **Review Analytics:** After submitting your answers, review your score and cognitive breakdown via the dynamic charts at the bottom.
 
 ---
 
@@ -49,97 +116,44 @@ User Topic → Semantic Retrieval (top-k, distance-filtered) → CrewAI Pipeline
 
 ```
 synapse.ai/
-├── .env                          # API keys (GROQ_API_KEY)
-├── .chroma_store/                # Persistent ChromaDB data
-├── pyproject.toml                # Project config & dependencies
-├── requirements.txt              # Pip requirements
-├── test.pdf                      # Sample test document
-├── knowledge/                    # CrewAI knowledge base
-├── src/
-│   └── synapse_ai/
-│       ├── __init__.py
-│       ├── app.py                # Streamlit frontend (main)
-│       ├── rag.py                # RAG pipeline
-│       ├── crew.py               # CrewAI agents & tasks
-│       ├── blooms.py             # Bloom's Taxonomy engine
-│       ├── main.py               # CLI entry point
-│       ├── config/
-│       │   ├── agent.yaml        # Agent definitions
-│       │   └── task.yaml         # Task definitions
-│       ├── models/
-│       │   └── quiz.py           # Pydantic schemas
-│       └── tools/
-│           └── extract_pdf_content_tool.py
+├── .env                          # Environment variables (API Keys)
+├── .chroma_store/                # Local persistent vector database
+├── Interview_Prep.md             # Developer architecture breakdown 
+├── requirements.txt              # Project dependencies
+├── test.pdf                      # Sample PDF for testing
+└── src/
+    └── synapse_ai/
+        ├── app.py                # Main Streamlit UI application
+        ├── rag.py                # Data ingestion, embedding, and retrieval
+        ├── crew.py               # CrewAI agents & orchestration logic
+        ├── blooms.py             # Bloom's Taxonomy logic & prompt builder
+        ├── main.py               # Alternative CLI execution script
+        ├── config/               
+        │   ├── agent.yaml        # AI agent persona definitions
+        │   └── task.yaml         # AI task prompt instructions
+        └── models/               
+            └── quiz.py           # Pydantic schema validation models
 ```
 
 ---
 
-## 🚀 Quick Start
+## 📊 Bloom's Taxonomy Defaults
 
-### 1. Install dependencies
+By default, a standard 10-question quiz is distributed as follows to ensure cognitive balance (scales proportionally for other lengths):
 
-```bash
-pip install uv
-crewai install
-```
-
-Or using pip directly:
-
-```bash
-pip install -r requirements.txt
-```
-
-### 2. Set API key
-
-Create a `.env` file in the project root:
-
-```
-GROQ_API_KEY=your_groq_api_key_here
-```
-
-### 3. Launch the app
-
-```bash
-streamlit run src/synapse_ai/app.py
-```
-
----
-
-## 📊 Bloom's Taxonomy Distribution
-
-Default distribution for a 10-question quiz:
-
-| Level | Count | Cognitive Verbs |
+| Level | Count | Focus |
 |-------|-------|----------------|
-| Remember | 2 | recall, list, define, identify |
-| Understand | 3 | explain, summarize, paraphrase |
-| Apply | 2 | use, solve, demonstrate |
-| Analyze | 2 | compare, differentiate, examine |
-| Evaluate | 1 | judge, justify, critique |
-| Create | 0 | design, construct, formulate |
-
-Distribution scales proportionally for any question count (3–20).
-
----
-
-## ⚡ Key Parameters
-
-| Parameter | Value |
-|-----------|-------|
-| Embedding dimensions | 384 |
-| Chunk size / overlap | 1000 / 200 |
-| L2 distance threshold | 1.3 |
-| LLM temperature | 0.7 |
-| Default questions | 10 (configurable 3–20) |
+| Remember | 2 | Recall facts, basic concepts |
+| Understand | 3 | Explain ideas or concepts |
+| Apply | 2 | Use information in new situations |
+| Analyze | 2 | Draw connections among ideas |
+| Evaluate | 1 | Justify a stand or decision |
+| Create | 0 | Produce new or original work |
 
 ---
 
 ## 👤 Author
-
 **Rahul** — AI Engineer
 
----
-
 ## 📄 License
-
 This project is for educational purposes.

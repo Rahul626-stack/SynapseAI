@@ -121,10 +121,11 @@ def retrieve_context(col_name: str, query: str, top_k: int = 5) -> str:
     """Retrieve top-k relevant chunks for a query from ChromaDB.
 
     Uses L2 distance filtering with DISTANCE_THRESHOLD to exclude
-    semantically irrelevant chunks.
+    semantically irrelevant chunks. Introduces random sampling from a 
+    larger pool of chunks to ensure high variability between quiz generations.
 
     Special "Entire Document" mode: when query is empty or matches
-    "entire document", fetches top-20 chunks directly without embedding.
+    "entire document", fetches up to 30 chunks and samples from them.
 
     Args:
         col_name: ChromaDB collection name.
@@ -134,23 +135,27 @@ def retrieve_context(col_name: str, query: str, top_k: int = 5) -> str:
     Returns:
         Joined context string of relevant chunks.
     """
+    import random
     client = _get_client()
     collection = client.get_collection(name=col_name)
 
     # ── "Entire Document" mode — no query embedding needed ───────────────
     if not query or query.strip().lower() in ("", "entire document"):
-        results = collection.get(limit=20)
+        results = collection.get(limit=30)
         chunks = results["documents"] if results["documents"] else []
+        if len(chunks) > top_k:
+            chunks = random.sample(chunks, top_k)
         return "\n\n---\n\n".join(chunks)
 
     # ── Generate query embedding ─────────────────────────────────────────
     embed_model = _get_embed_model()
     query_embedding = embed_model.encode(query, show_progress_bar=False).tolist()
 
-    # ── Perform L2 distance search ───────────────────────────────────────
+    # ── Perform L2 distance search (fetch larger pool for variety) ───────
+    pool_size = max(top_k * 2, 15)
     results = collection.query(
         query_embeddings=[query_embedding],
-        n_results=top_k,
+        n_results=pool_size,
     )
 
     if not results["documents"] or not results["documents"][0]:
@@ -168,5 +173,9 @@ def retrieve_context(col_name: str, query: str, top_k: int = 5) -> str:
     # ── Fallback: return closest chunk if all exceed threshold ────────────
     if not context_chunks and documents:
         context_chunks = [documents[0]]
+
+    # ── Randomly sample top_k from the valid pool ────────────────────────
+    if len(context_chunks) > top_k:
+        context_chunks = random.sample(context_chunks, top_k)
 
     return "\n\n---\n\n".join(context_chunks)
