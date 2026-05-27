@@ -1,4 +1,4 @@
-# 🧠 synapse.ai
+# ✨ synapse.ai
 
 **Intelligent, AI-Powered Educational Assessment Platform**
 
@@ -6,7 +6,7 @@ Transform any PDF document into a pedagogically-sound, multi-format assessment u
 
 ---
 
-## ✨ Features
+##  Features
 
 - **RAG-Powered Contextual Grounding:** Questions are generated from your actual document content via robust semantic retrieval using ChromaDB and local SentenceTransformers.
 - **Pedagogically Sound (Bloom's Taxonomy):** Automatically distributes generated questions across the 6 cognitive levels (Remember, Understand, Apply, Analyze, Evaluate, Create) for balanced learning outcomes.
@@ -19,7 +19,7 @@ Transform any PDF document into a pedagogically-sound, multi-format assessment u
 
 ---
 
-## 🏗️ Architecture Flow
+##  Architecture Flow
 
 ```mermaid
 graph TD
@@ -41,7 +41,7 @@ graph TD
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 | Component | Technology |
 |-----------|-----------|
@@ -56,7 +56,7 @@ graph TD
 
 ---
 
-## 🚀 Installation & Setup Instructions
+##  Installation & Setup Instructions
 
 Follow these steps to run the application locally.
 
@@ -98,7 +98,7 @@ The application will automatically open in your default web browser at `http://l
 
 ---
 
-## 🎮 How to Operate the Application
+##  How to Operate the Application
 
 1. **Upload a Document:** Open the sidebar on the left and upload any educational PDF document. Wait for the *Knowledge Base Synchronized* status.
 2. **Define Parameters:**
@@ -137,7 +137,7 @@ synapse.ai/
 
 ---
 
-## 📊 Bloom's Taxonomy Defaults
+##  Bloom's Taxonomy Defaults
 
 By default, a standard 10-question quiz is distributed as follows to ensure cognitive balance (scales proportionally for other lengths):
 
@@ -152,8 +152,3 @@ By default, a standard 10-question quiz is distributed as follows to ensure cogn
 
 ---
 
-## 👤 Author
-**Rahul** — AI Engineer
-
-## 📄 License
-This project is for educational purposes.
