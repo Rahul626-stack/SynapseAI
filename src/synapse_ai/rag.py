@@ -24,10 +24,22 @@ DISTANCE_THRESHOLD = 1.3
 
 # ── Cached resources ─────────────────────────────────────────────────────────
 
+import torch
+
 @st.cache_resource
 def _get_embed_model():
-    """Returns cached SentenceTransformer instance (loads once per session)."""
-    return SentenceTransformer(EMBED_MODEL)
+    """Returns cached SentenceTransformer instance (loads once per session) with INT8 quantization."""
+    model = SentenceTransformer(EMBED_MODEL)
+    
+    import warnings
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        model[0].auto_model = torch.quantization.quantize_dynamic(
+            model[0].auto_model, 
+            {torch.nn.Linear}, 
+            dtype=torch.qint8
+        )
+    return model
 
 
 @st.cache_resource

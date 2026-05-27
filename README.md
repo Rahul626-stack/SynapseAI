@@ -9,6 +9,7 @@ Transform any PDF document into a pedagogically-sound, multi-format assessment u
 ##  Features
 
 - **RAG-Powered Contextual Grounding:** Questions are generated from your actual document content via robust semantic retrieval using ChromaDB and local SentenceTransformers.
+- **Hardware Optimized:** The local embedding model is actively optimized using PyTorch dynamic INT8 quantization, massively accelerating CPU inference and halving memory footprint.
 - **Pedagogically Sound (Bloom's Taxonomy):** Automatically distributes generated questions across the 6 cognitive levels (Remember, Understand, Apply, Analyze, Evaluate, Create) for balanced learning outcomes.
 - **Multi-Agent Orchestration:** Utilizes two specialized CrewAI agents that collaborate sequentially: 
   - *PDF Content Analyzer:* Extracts key concepts and themes.
@@ -25,7 +26,7 @@ Transform any PDF document into a pedagogically-sound, multi-format assessment u
 graph TD
     A[PDF Upload] -->|PyMuPDF Extraction| B(Raw Text)
     B -->|LangChain Recursive Splitter| C(Text Chunks)
-    C -->|SentenceTransformer| D[(ChromaDB Persistent Vector Store)]
+    C -->|SentenceTransformer & INT8 Quantization| D[(ChromaDB Persistent Vector Store)]
     
     E[User Topic Query] -->|Embedding| F{Semantic Search}
     D --> F
@@ -48,7 +49,7 @@ graph TD
 | **Core LLM** | Groq (Llama-3.3 70B Versatile) |
 | **Agent Framework** | CrewAI |
 | **Vector Database** | ChromaDB (Persistent Local Storage) |
-| **Embeddings** | SentenceTransformers (`all-MiniLM-L6-v2`) |
+| **Embeddings** | SentenceTransformers (`all-MiniLM-L6-v2`, INT8 Quantized) |
 | **Text Processing** | LangChain & PyMuPDF (`fitz`) |
 | **Frontend UI** | Streamlit + Custom CSS |
 | **Data Viz** | Plotly Express / Graph Objects |
