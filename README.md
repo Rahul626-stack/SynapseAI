@@ -118,7 +118,6 @@ The application will automatically open in your default web browser at `http://l
 synapse.ai/
 ├── .env                          # Environment variables (API Keys)
 ├── .chroma_store/                # Local persistent vector database
-├── Interview_Prep.md             # Developer architecture breakdown 
 ├── requirements.txt              # Project dependencies
 ├── test.pdf                      # Sample PDF for testing
 └── src/
