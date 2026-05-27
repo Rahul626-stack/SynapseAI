@@ -10,3 +10,4 @@ python-dotenv>=1.0.0
 pymupdf>=1.23.0
 langchain-text-splitters>=0.2.0
 plotly>=5.18.0
+torchao>=0.5.0

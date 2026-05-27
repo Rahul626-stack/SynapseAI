@@ -24,21 +24,25 @@ DISTANCE_THRESHOLD = 1.3
 
 # ── Cached resources ─────────────────────────────────────────────────────────
 
-import torch
-
 @st.cache_resource
 def _get_embed_model():
     """Returns cached SentenceTransformer instance (loads once per session) with INT8 quantization."""
     model = SentenceTransformer(EMBED_MODEL)
-    
-    import warnings
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        model[0].auto_model = torch.quantization.quantize_dynamic(
-            model[0].auto_model, 
-            {torch.nn.Linear}, 
-            dtype=torch.qint8
-        )
+
+    try:
+        from torchao.quantization import quantize_, int8_dynamic_activation_int8_weight
+        quantize_(model[0].auto_model, int8_dynamic_activation_int8_weight())
+    except ImportError:
+        # Fallback: use legacy torch.quantization if torchao is not installed
+        import warnings
+        import torch
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            model[0].auto_model = torch.quantization.quantize_dynamic(
+                model[0].auto_model,
+                {torch.nn.Linear},
+                dtype=torch.qint8
+            )
     return model
 
 
@@ -56,10 +60,10 @@ def _get_client():
 def _collection_id(original_filename: str) -> str:
     """Generate deterministic collection name from original filename.
 
-    Uses MD5 hash for deduplication — same file always maps to the same
+    Uses SHA256 hash for deduplication — same file always maps to the same
     collection, enabling instant re-quizzing without re-ingestion.
     """
-    return "quiz_" + hashlib.md5(original_filename.encode()).hexdigest()[:10]
+    return "quiz_" + hashlib.sha256(original_filename.encode()).hexdigest()[:12]
 
 
 # ── Ingestion ────────────────────────────────────────────────────────────────
@@ -85,21 +89,32 @@ def ingest_pdf(pdf_path: str, original_filename: str = "document.pdf") -> str:
     except Exception:
         pass
 
-    # ── Extract text with PyMuPDF (page by page) ─────────────────────────
+    # ── Extract text with PyMuPDF (block-level for structure preservation) ──
     try:
         doc = fitz.open(pdf_path)
         full_text = ""
         for page in doc:
-            full_text += page.get_text() + "\n"
+            blocks = page.get_text("dict", sort=True)["blocks"]
+            for block in blocks:
+                if block["type"] == 0:  # text block
+                    lines_text = ""
+                    for line in block["lines"]:
+                        span_text = " ".join(span["text"] for span in line["spans"])
+                        lines_text += span_text + " "
+                    full_text += lines_text.strip() + "\n\n"
         doc.close()
     except Exception as e:
-        full_text = f"[Error reading PDF: {e}]"
+        raise ValueError(f"Failed to read PDF: {e}")
+
+    # Guard against empty/scanned PDFs
+    if not full_text.strip():
+        raise ValueError("PDF appears to be empty or contains only images/scanned content.")
 
     # ── Chunk with LangChain RecursiveCharacterTextSplitter ──────────────
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=1000,
-        chunk_overlap=200,
-        separators=["\n\n", "\n", ".", " ", ""],
+        chunk_overlap=250,
+        separators=["\n\n", "\n", ". ", "? ", "! ", " ", ""],
     )
     chunks = splitter.split_text(full_text)
 
@@ -108,7 +123,7 @@ def ingest_pdf(pdf_path: str, original_filename: str = "document.pdf") -> str:
 
     # ── Embed with SentenceTransformers (local, CPU) ─────────────────────
     model = _get_embed_model()
-    embeddings = model.encode(chunks, show_progress_bar=False).tolist()
+    embeddings = model.encode(chunks, show_progress_bar=False, batch_size=64).tolist()
 
     # ── Store in ChromaDB ────────────────────────────────────────────────
     # Delete existing collection to allow clean re-ingestion

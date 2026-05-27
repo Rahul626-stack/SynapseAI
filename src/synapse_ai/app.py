@@ -345,7 +345,13 @@ if uploaded_file and "col_name" not in st.session_state:
         st.write("Extracting vector context via PyMuPDF...")
         st.write("Applying semantic fracturing...")
         
-        st.session_state["col_name"] = ingest_pdf(tmp_path, original_filename=uploaded_file.name)
+        try:
+            st.session_state["col_name"] = ingest_pdf(tmp_path, original_filename=uploaded_file.name)
+        except ValueError as e:
+            status.update(label="Ingestion Failed", state="error", expanded=False)
+            st.error(f"Could not process the uploaded PDF: {e}")
+            st.stop()
+        
         st.session_state["pdf_name"] = uploaded_file.name
         
         client = _get_client()
