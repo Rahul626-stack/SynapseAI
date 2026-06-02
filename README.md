@@ -1,6 +1,6 @@
 # ✨ Synapse.ai
 
-**Intelligent, AI-Powered Educational Assessment Platform**
+**AI-Powered Quiz Generator and Assessment Platform**
 
 Transform any PDF document into a pedagogically-sound, multi-format assessment using RAG, Multi-Agent AI (CrewAI), and Bloom's Taxonomy. Synapse.ai intelligently distributes questions across cognitive levels to ensure a deep, balanced evaluation of knowledge.
 
