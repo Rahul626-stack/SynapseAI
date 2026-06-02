@@ -18,6 +18,18 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 load_dotenv()
 
+# ── Background warm-up: start loading model+DB without blocking UI ────────────
+import threading
+from synapse_ai.rag import _get_embed_model, _get_client
+
+if "warmup_done" not in st.session_state:
+    st.session_state["warmup_done"] = False
+    def _warmup():
+        _get_embed_model()
+        _get_client()
+        st.session_state["warmup_done"] = True
+    threading.Thread(target=_warmup, daemon=True).start()
+
 # ── Page config ──────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="Synapse AI",
@@ -26,7 +38,8 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ── Custom CSS for Ultra-Premium UI ──────────────────────────────────────────
+
+# ── Custom CSS for Ultra-Premium UI ────────────────────────────────────
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
@@ -704,3 +717,70 @@ if "questions" in st.session_state and st.session_state["questions"]:
             for key in ["questions", "answers", "submitted", "quiz_topic"]:
                 st.session_state.pop(key, None)
             st.rerun()
+
+
+# ── Boot overlay: runs AFTER full UI renders, dims background ────────────────
+if not st.session_state.get("warmup_done"):
+    import time
+    _overlay = st.empty()
+
+    def _render_overlay(pct: int, label: str):
+        bar_w = max(pct, 2)
+        _overlay.markdown(f"""
+        <div style="
+            position: fixed; inset: 0; z-index: 99999;
+            background: rgba(3, 7, 18, 0.75);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            display: flex; align-items: center; justify-content: center;
+        ">
+            <div style="
+                background: rgba(15, 23, 42, 0.95);
+                border: 1px solid rgba(255,255,255,0.08);
+                border-radius: 20px;
+                padding: 36px 44px;
+                min-width: 320px;
+                box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+                text-align: center;
+            ">
+                <p style="margin:0 0 6px; font-family:Inter,sans-serif; font-size:13px;
+                          font-weight:700; letter-spacing:0.12em; text-transform:uppercase;
+                          color:#64748B;">SYNAPSE AI</p>
+                <h3 style="margin:0 0 28px; font-family:Inter,sans-serif; font-size:20px;
+                           font-weight:700; color:#F1F5F9; letter-spacing:-0.02em;">
+                      Initializing Engine
+                </h3>
+                <div style="
+                    background: rgba(255,255,255,0.05);
+                    border-radius: 999px;
+                    height: 6px;
+                    width: 100%;
+                    overflow: hidden;
+                    margin-bottom: 14px;
+                ">
+                    <div style="
+                        width: {bar_w}%;
+                        height: 100%;
+                        border-radius: 999px;
+                        background: linear-gradient(90deg, #3B82F6, #8B5CF6);
+                        box-shadow: 0 0 12px rgba(139,92,246,0.6);
+                        transition: width 0.4s ease;
+                    "></div>
+                </div>
+                <div style="display:flex; justify-content:space-between;
+                            font-family:Inter,sans-serif; font-size:12px; color:#64748B; margin-bottom:10px;">
+                    <span>{label}</span>
+                    <span style="color:#8B5CF6; font-weight:700;">{pct}%</span>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    _render_overlay(0, "Loading embedding model...")
+    _get_embed_model()
+    _render_overlay(65, "Connecting to vector store...")
+    _get_client()
+    _render_overlay(100, "Engine ready")
+    st.session_state["warmup_done"] = True
+    time.sleep(0.5)
+    st.rerun()

@@ -26,24 +26,9 @@ DISTANCE_THRESHOLD = 1.3
 
 @st.cache_resource
 def _get_embed_model():
-    """Returns cached SentenceTransformer instance (loads once per session) with INT8 quantization."""
-    model = SentenceTransformer(EMBED_MODEL)
+    """Returns cached SentenceTransformer instance (loaded once, cached for session)."""
+    return SentenceTransformer(EMBED_MODEL)
 
-    try:
-        from torchao.quantization import quantize_, int8_dynamic_activation_int8_weight
-        quantize_(model[0].auto_model, int8_dynamic_activation_int8_weight())
-    except ImportError:
-        # Fallback: use legacy torch.quantization if torchao is not installed
-        import warnings
-        import torch
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            model[0].auto_model = torch.quantization.quantize_dynamic(
-                model[0].auto_model,
-                {torch.nn.Linear},
-                dtype=torch.qint8
-            )
-    return model
 
 
 @st.cache_resource
