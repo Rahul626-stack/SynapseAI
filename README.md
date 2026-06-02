@@ -26,7 +26,7 @@ Transform any PDF document into a pedagogically-sound, multi-format assessment u
 graph TD
     A[PDF Upload] -->|PyMuPDF Extraction| B(Raw Text)
     B -->|LangChain Recursive Splitter| C(Text Chunks)
-    C -->|SentenceTransformer & torchao INT8 Quantization| D[(ChromaDB Persistent Vector Store)]
+    C -->|SentenceTransformer| D[(ChromaDB Persistent Vector Store)]
     
     E[User Topic Query] -->|Embedding| F{Semantic Search}
     D --> F
