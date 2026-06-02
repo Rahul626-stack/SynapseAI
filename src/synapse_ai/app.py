@@ -334,6 +334,11 @@ with st.sidebar:
     generate_btn = st.button("Synthesize Quiz", use_container_width=True, type="primary")
 
 
+# ── Detect new PDF upload and clear stale cache ──────────────────────────────
+if uploaded_file and uploaded_file.name != st.session_state.get("pdf_name"):
+    for key in ["col_name", "pdf_name", "chunk_count", "questions", "answers", "submitted", "quiz_topic"]:
+        st.session_state.pop(key, None)
+
 # ── Ingest PDF on upload ──────────────────────────────────────────────────────
 if uploaded_file and "col_name" not in st.session_state:
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
