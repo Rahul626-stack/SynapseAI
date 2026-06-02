@@ -10,7 +10,6 @@ Transform any PDF document into a pedagogically-sound, multi-format assessment u
 
 - **RAG-Powered Contextual Grounding:** Questions are generated from your actual document content via robust semantic retrieval using ChromaDB and local SentenceTransformers.
 - **Structure-Aware Chunking:** Uses PyMuPDF block-level extraction to preserve paragraph and table boundaries, with sentence-aware text splitting to ensure semantically coherent chunks.
-- **Hardware Optimized:** The local embedding model is actively optimized using `torchao` INT8 dynamic quantization (with legacy PyTorch fallback), massively accelerating CPU inference and halving memory footprint.
 - **Pedagogically Sound (Bloom's Taxonomy):** Automatically distributes generated questions across the 6 cognitive levels (Remember, Understand, Apply, Analyze, Evaluate, Create) for balanced learning outcomes.
 - **Multi-Agent Orchestration:** Utilizes two specialized CrewAI agents that collaborate sequentially: 
   - *PDF Content Analyzer:* Extracts key concepts and themes.
@@ -50,7 +49,7 @@ graph TD
 | **Core LLM** | Groq (Llama-3.3 70B Versatile) |
 | **Agent Framework** | CrewAI |
 | **Vector Database** | ChromaDB (Persistent Local Storage) |
-| **Embeddings** | SentenceTransformers (`all-MiniLM-L6-v2`, torchao INT8 Quantized) |
+| **Embeddings** | SentenceTransformers (`all-MiniLM-L6-v2` |
 | **Text Processing** | LangChain (sentence-aware splitting) & PyMuPDF (block-level extraction) |
 | **Frontend UI** | Streamlit + Custom CSS |
 | **Data Viz** | Plotly Express / Graph Objects |
